@@ -1,0 +1,32 @@
+services:
+  imap-backend:
+    image: ghcr.io/paulduttonpad/imap-backend:latest
+    networks:
+      - mail-network
+    volumes:
+      - ./Mail:/srv/mail
+      - ./config/dovecot.conf:/etc/dovecot/conf.d/dovecot.conf
+
+  mail-frontend:
+    image: ghcr.io/paulduttonpad/mail-frontend:latest
+    ports:
+      - "8080:80"
+    depends_on:
+      - imap-backend
+    networks:
+      - mail-network
+    volumes:
+      - ./config/defaults.inc.php:/var/roundcube/config/defaults.inc.php
+
+  mail-sync:
+    image: ghcr.io/paulduttonpad/mail-sync:latest
+    networks:
+      - mail-network
+    volumes:
+      - ./config:/config
+      - ./Mail:/Mail
+
+networks:
+  mail-network:
+    driver: bridge
+
